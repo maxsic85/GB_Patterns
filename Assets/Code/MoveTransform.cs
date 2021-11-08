@@ -18,9 +18,10 @@ namespace Max.Asteroid
 
         public void Move(float horizontal, float vertical, float deltaTime)
         {
+            if (_transform == null) return;
             var speed = deltaTime * Speed;
             _move.Set(horizontal * speed, vertical * speed, 0.0f);
-            var rb = _transform.gameObject.GetOrAddComponent<Rigidbody>();
+            var rb = _transform.gameObject.GetOrAddComponent<Rigidbody2D>();
             rb.AddForce(_move * speed);
             // _transform.localPosition += _move;
         }
