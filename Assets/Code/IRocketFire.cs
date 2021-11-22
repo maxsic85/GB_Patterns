@@ -6,6 +6,6 @@ namespace Max.Asteroid
 {
     public interface IRocketFire : IWeapon
     {
-        void Shoot (Rigidbody2D rigidbody2D, float force);
+        void Shoot ( float force);
     }
 }

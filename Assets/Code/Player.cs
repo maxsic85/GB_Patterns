@@ -2,65 +2,36 @@ using System;
 using UnityEngine;
 namespace Max.Asteroid
 {
-    internal sealed class Player : MonoBehaviour
+    internal sealed class Player : MonoBehaviour,IPlayer
     {
-        [SerializeField] private float _speed;
-        [SerializeField] private float _acceleration;
-        [SerializeField] private float _hp;
-        [SerializeField] private Rigidbody2D _bullet;
-        [SerializeField] private Transform _barrel;
-        [SerializeField] private float _force;
+        public IShip _ship;
 
-        private Camera _camera;
-        private IShip _ship;
-        
+        [SerializeField] Rigidbody2D _velocity;
+
         private void Start()
         {
-            _camera = Camera.main;
-            var moveTransform = new AccelerationMove(gameObject.transform, _speed, _acceleration);
-            var rotation = new RotationShip(transform);
-          //  _ship = new Ship(moveTransform, rotation);
-           _ship = new BattleShip(moveTransform,_force,transform);
+            _velocity = gameObject.GetComponent<Rigidbody2D>();
         }
-        private void Update()
+        private void OnBecameInvisible()
         {
-            var deltaTime = Time.deltaTime;
-            var direction = Input.mousePosition - _camera.WorldToScreenPoint(transform.position);
-
-            if (_ship is IMove movingShip)
-                movingShip.Move(Input.GetAxis("Horizontal"),
-                                Input.GetAxis("Vertical"),
-                                deltaTime);
-
-            if (Input.GetButtonDown("Fire1"))
+            if (gameObject.activeSelf)
             {
-                if (_ship is IRocketFire rocket)
-                    rocket.Shoot(_bullet, _force);
-            }
-
-            if (_ship is IAcceleration accselShip)
-            {
-                if (Input.GetKeyDown(KeyCode.LeftShift))
-                {
-                    accselShip.AddAcceleration();
-                }
-                if (Input.GetKeyUp(KeyCode.LeftShift))
-                {
-                    accselShip.RemoveAcceleration();
-                }
+                transform.position = Vector2.down;
+                _velocity.velocity = Vector2.zero;
             }
         }
-
-        private void OnCollisionEnter2D(Collision2D other)
+        public void OnTriggerEnter2D(Collider2D colider)
         {
-            if (_hp <= 0)
+            if (colider.gameObject.GetComponent<Enemy>() is Enemy || colider.gameObject.GetComponent<Buillet>() is IBuilet)
             {
-                Destroy(gameObject);
-            }
-            else
-            {
-                _hp--;
+                //TODO take damage
+                
+                Time.timeScale = 0;
+                StopAllCoroutines();
+                Application.Quit();
+             
             }
         }
+
     }
 }

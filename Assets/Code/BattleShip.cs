@@ -4,17 +4,21 @@ using UnityEngine;
 
 namespace Max.Asteroid
 {
-    public class BattleShip : IShip, IMove, IRocketFire,IAcceleration
+    public class BattleShip : IShip, IMove, IRocketFire,IAcceleration,IRotation
     {
         private readonly IMove _moveImplementation;
+        private readonly IRotation _rotateImplementation;
+        private IAmmunitionPool<Buillet> _ammunitionPool;
         private readonly float _shootForce;
         private readonly Transform _transform;
 
-        public BattleShip(IMove moveImplementation, float shootForce, Transform transform)
+        public BattleShip(IMove moveImplementation,IRotation rotateImplementation, float shootForce, Transform transform,IAmmunitionPool<Buillet> ammunitionPool)
         {
             _moveImplementation = moveImplementation;
+            _rotateImplementation = rotateImplementation;
             _shootForce = shootForce;
             _transform = transform;
+            _ammunitionPool = ammunitionPool;
         }
 
         public float Speed => throw new System.NotImplementedException();
@@ -44,10 +48,19 @@ namespace Max.Asteroid
             }
         }
 
-        public void Shoot(Rigidbody2D rigidbody2D, float force)
+        public void Shoot( float force)
         {
-            var temAmmunition = Object.Instantiate(rigidbody2D, _transform.position, _transform.rotation);
-            temAmmunition.AddForce(_transform.up * force);
+            var ammunition = _ammunitionPool.GetAmmunition(AmmunitionType.Bullet);
+            ammunition.AddForce(_transform.transform.GetChild(0).position, Quaternion.Euler(ammunition.transform.eulerAngles.x,
+                        ammunition.transform.eulerAngles.y, _transform.eulerAngles.z), _transform.up * force);
+            if (!ammunition.gameObject.GetComponent<SpriteRenderer>().flipX) return;
+            ammunition.gameObject.GetComponent<SpriteRenderer>().flipX = false;
+            ammunition.gameObject.GetComponent<SpriteRenderer>().flipY = false;
+        }
+
+        public void Rotation(Vector3 direction)
+        {
+            _rotateImplementation.Rotation(direction);
         }
     }
 }
